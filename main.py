@@ -6,8 +6,7 @@ from datetime import datetime, timedelta
 from email.message import EmailMessage
 from pathlib import Path
 
-from google import genai
-from google.genai import types
+import anthropic
 from dotenv import load_dotenv
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -15,7 +14,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 load_dotenv()
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 SCOPES = [
     "https://www.googleapis.com/auth/gmail.modify",
@@ -68,35 +67,36 @@ def get_emails(gmail_service):
     return emails
 
 
-def ask_gemini(prompt):
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=prompt
+def ask_claude(prompt):
+    message = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=1024,
+        messages=[{"role": "user", "content": prompt}]
     )
-    return response.text
+    return message.content[0].text
 
 
 def is_meeting_invite(subject, body):
     keywords = ["פגישה", "נפגש", "meeting", "let's meet", "coffee",
-                "שיחה", "call", "zoom", "לדבר", "schedule", "meet"]
+                "שיחה", "call", "zoom", "דבר", "schedule", "meet"]
     text = (subject + " " + body).lower()
     if not any(kw in text for kw in keywords):
         return False
     prompt = f"""האם המייל הבא הוא הזמנה לפגישה? ענה רק במילה אחת: כן או לא.
 נושא: {subject}
 תוכן: {body[:500]}"""
-    response = ask_gemini(prompt)
+    response = ask_claude(prompt)
     return "כן" in response
 
 
 def extract_meeting_details(subject, body):
-    prompt = f"""חלץ את פרטי הפגישה מהמייל הזה. החזר JSON בלבד ללא טקסט נוסף.
+    prompt = f"""חלץ את פרטי הפגישה מהמייל הבא. החזר JSON בלבד ללא טקסט נוסף.
 פורמט: {{"date": "YYYY-MM-DD", "time": "HH:MM", "duration_minutes": 60, "location": "string or null", "title": "string"}}
 אם תאריך או שעה חסרים, שים null.
 
 נושא: {subject}
 תוכן: {body[:500]}"""
-    response = ask_gemini(prompt)
+    response = ask_claude(prompt)
     text = response.strip().replace("```json", "").replace("```", "").strip()
     return json.loads(text)
 
@@ -146,14 +146,14 @@ def main():
     gmail_service = build("gmail", "v1", credentials=creds)
     calendar_service = build("calendar", "v3", credentials=creds)
 
-    print("📬 סורק מיילים מהיומיים האחרונים...")
+    print("🔬 סורק מיילים מהיומיים האחרונים...")
     emails = get_emails(gmail_service)
     print(f"נמצאו {len(emails)} מיילים")
 
     for email in emails:
         print(f"\n📨 בודק: {email['subject']}")
         if not is_meeting_invite(email["subject"], email["body"]):
-            print("⏭ לא הזמנה לפגישה — מדלג")
+            print("➡ לא הזמנה לפגישה — מדלג")
             continue
         print("✉ זוהתה הזמנה לפגישה!")
         details = extract_meeting_details(email["subject"], email["body"])
@@ -169,7 +169,7 @@ def main():
             print("📅 הזמן פנוי — יוצר אירוע")
             create_event(calendar_service, details)
         else:
-            print("🚫 הזמן תפוס — שולח מייל חוזר")
+            print("❌ הזמן תפוס — שולח מייל חוזר")
             send_reply(gmail_service, email)
 
 
