@@ -90,9 +90,13 @@ def is_meeting_invite(subject, body):
 
 
 def extract_meeting_details(subject, body):
+    today = datetime.now().strftime("%Y-%m-%d")
+    day_name = datetime.now().strftime("%A")
     prompt = f"""חלץ את פרטי הפגישה מהמייל הבא. החזר JSON בלבד ללא טקסט נוסף.
+תאריך היום הוא: {today} ({day_name}).
+אם המייל מזכיר "מחר", "אתמול", "ביום שלישי הקרוב" וכו' — חשב את התאריך המדויק לפי תאריך היום.
 פורמט: {{"date": "YYYY-MM-DD", "time": "HH:MM", "duration_minutes": 60, "location": "string or null", "title": "string"}}
-אם תאריך או שעה חסרים, שים null.
+אם שעה חסרה, שים null. אם תאריך חסר לחלוטין, שים null.
 
 נושא: {subject}
 תוכן: {body[:500]}"""

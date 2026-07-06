@@ -1,5 +1,13 @@
 Result: Calendar event created successfully for the requested time slot.
 
+### Conflict test (already passed ✅)
+Sent two emails requesting the same time slot:
+- First email → Calendar event created
+- Second email → Decline reply sent automatically: "לא ניתן לקיים את הפגישה"
+
+### Relative date test (already passed ✅)
+Sent email with "מחר בשעה 10:00" — agent correctly resolved to exact date `2026-07-07`.
+
 ---
 
 ## 🛠️ Troubleshooting
@@ -19,7 +27,7 @@ Result: Calendar event created successfully for the requested time slot.
 |---|---|
 | Scan Gmail inbox, last 2 days only | `gmail.users().messages().list()` with `newer_than:2d` query |
 | Identify free-text meeting invitations | Rule pre-filter + Claude LLM classification |
-| Extract date, time, participants, location | Claude structured prompt with JSON output |
+| Extract date, time, participants, location | Claude structured prompt with relative date support |
 | Check Google Calendar availability | `calendar.freebusy().query()` |
 | Create event if available | `calendar.events().insert()` on `primary` calendar |
 | Send decline if busy | `gmail.users().messages().send()` with reply headers |
