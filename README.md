@@ -37,6 +37,35 @@ Sent email with "מחר בשעה 10:00" — agent correctly resolved to exact da
 | Hybrid detection (rules + LLM) | Implemented — exceeds 40% rule-only threshold |
 
 ---
+---
+
+## 📸 Screenshots — תיעוד פעולת המערכת
+
+### 1. הרצת הסוכן — פלט הטרמינל
+
+![Terminal Output](docs/screenshots/screenshot_terminal.png)
+
+הסוכן סרק את תיבת הדואר הנכנס וזיהה **8 מיילים** בשני הימים האחרונים.
+
+**שיפור מרכזי — טיפול בתאריכים יחסיים:**  
+הסוכן מסוגל לפרש ביטויים כגון `"מחר"`, `"ביום שלישי הקרוב"` ולהמיר אותם לתאריך מדויק.  
+לדוגמה: המייל "נפגש מחר?" שנשלח ב-06/07/2026 → הסוכן זיהה תאריך `2026-07-07` אוטומטית.
+
+### 2. מייל דחייה אוטומטי
+
+![Gmail Decline Reply](docs/screenshots/screenshot_gmail_reply.png)
+
+כאשר החריץ ביומן **תפוס**, הסוכן שלח תשובה: **"לא ניתן לקיים את הפגישה"**
+
+### 3. תיבת הדואר הנכנס
+
+![Gmail Inbox](docs/screenshots/screenshot_inbox.png)
+
+### 4. Google Calendar — אירוע שנוצר אוטומטית
+
+![Google Calendar](docs/screenshots/screenshot_calendar.png)
+
+אירוע **"פגישת עבודה"** נוצר ביום שלישי 7/7/2026 בשעות 10:00–11:00 אוטומטית.
 
 ## 👤 Author
 
